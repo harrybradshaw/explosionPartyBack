@@ -19,7 +19,7 @@ app.use(sassMiddleware({
     indentedSyntax: true, // true = .sass and false = .scss
     sourceMap: true
 }));
-// app.use(express.static(path.join(__dirname, 'public')));
+
 
 app.use(function (req, res, next) {
     req.testing = 'testing';
@@ -259,4 +259,4 @@ app.ws('/lobby', (ws, req) => {
     });
 });
 
-app.listen(5000);
+app.listen(14521);
