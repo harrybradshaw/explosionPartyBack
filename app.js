@@ -138,7 +138,10 @@ wss.getUniqueID = function () {
 const sendGameStateToAll = () => {
     const {selectedPrompt, promptOptions, ...publicGameState} = gameState;
     wss.clients.forEach(client => {
-        client.send(JSON.stringify(publicGameState));
+        client.send(JSON.stringify({
+            ...publicGameState,
+            message: 'OK',
+        }));
     })
 }
 
