@@ -259,4 +259,5 @@ app.ws('/lobby', (ws, req) => {
     });
 });
 
-app.listen(14521);
+const port = process.env.PORT || 3000;
+app.listen(port);
