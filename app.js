@@ -46,7 +46,10 @@ let gameState = new GameState();
 const handleUpdatePrompt = (newPrompt) => {
     gameState.selectedPrompt = gameState.promptOptions.find(prompt => prompt.prompt === newPrompt);
     wss.clients.forEach(client => {
-        client.send(JSON.stringify({word: gameState.selectedPrompt.prompt}));
+        client.send(JSON.stringify({
+            word: gameState.selectedPrompt.prompt,
+            status: 'OK',
+        }));
     });
 };
 
