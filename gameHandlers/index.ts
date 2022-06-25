@@ -99,9 +99,13 @@ export default (websocketServer: WebSocketServer) => {
         return gameState.selectedPrompt?.answers.includes(guess) && !gameState.givenAnswers.has(guess);
     }
 
+
     const updateGuesser = () => {
         const total = websocketServer.clients.size;
         counter = (counter + 1) % total;
+        while (gameState.players[counter].lives <= 0){
+            counter = (counter + 1) % total;
+        }
         const guesserId = gameState.players[counter].id;
         timeout = setTimeout(() => handleTimerExpired(guesserId), gameState.timeout);
         senders.sendGameStateToAll(gameState);

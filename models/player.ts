@@ -9,7 +9,7 @@ export default class Player {
         this.id = id;
         this.lives = 3;
         this.isReady = false;
-        this.friendlyName = '';
+        this.friendlyName = undefined;
         this.lastTyped = '';
     }
 
