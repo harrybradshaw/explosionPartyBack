@@ -1,19 +1,20 @@
-const Player = require("./player.js");
-const Prompt = require('./prompt');
-module.exports = class GameState {
-    players;
-    promptOptions;
-    selectedPrompt;
-    answers = [];
+import Player from "./player";
+import Prompt from "./prompt";
+
+export default class GameState {
+    players: Player[];
+    promptOptions: Prompt[];
+    selectedPrompt: Prompt | undefined;
     givenAnswers;
-    gameIsRunning;
-    defaultTimeout;
+    gameIsRunning: boolean;
+    timeout: number;
 
     constructor() {
         this.players = [];
+        this.timeout = 5000;
         this.givenAnswers = new Set;
         this.gameIsRunning = false;
-        this.defaultTimeout = 10;
+        this.selectedPrompt = undefined;
         this.promptOptions = [
             //new Prompt('Randomly Selected Colours', ['Red', 'Blue', 'Green', 'Yellow']),
             new Prompt('US States', [
@@ -191,16 +192,16 @@ module.exports = class GameState {
         ]
     }
 
-    addPlayer(id) {
+    addPlayer(id: string) {
         const newPlayer =  new Player(id);
         this.players.push(newPlayer)
     }
 
-    addAnswer(guess) {
+    addAnswer(guess: string) {
         this.givenAnswers.add(guess);
     }
 
-    setGameIsRunning(value) {
+    setGameIsRunning(value: boolean) {
         this.gameIsRunning = value;
     }
 }
