@@ -1,6 +1,7 @@
 import GameState from "../models/gameState";
 import {WebSocketServer, WebSocket} from "ws";
 import gameSenders from "../gameSenders";
+import GameSettings from "../models/gameSettings";
 
 const getUniqueID = () => {
     function s4() {
@@ -21,14 +22,14 @@ export default (websocketServer: WebSocketServer) => {
         const response = {
             wasCorrect: isCorrect,
         };
-        if(!gameState.gameIsRunning){
-            gameState.setGameIsRunning(true);
-        }
+        !gameState.gameIsRunning && gameState.setGameIsRunning(true);
         websocketConnection.send(JSON.stringify(response));
         if (isCorrect){
             clearTimeout(timeout);
             gameState.addAnswer(guess);
-            updateGuesser();
+            gameState.givenAnswers.size === gameState.selectedPrompt?.answers.length
+                ? handleGameOver(GameOverReason.OutOfPossibleAnswers)
+                : updateGuesser();
         }
     }
 
@@ -43,10 +44,7 @@ export default (websocketServer: WebSocketServer) => {
         if (playerIndex >= 0) {
             gameState.players[playerIndex].isReady = true;
         }
-
-        if (gameState.players.every(player => player.isReady)){
-            handleStartGame();
-        }
+        gameState.players.every(player => player.isReady) && handleStartGame();
         senders.sendGameStateToAll(gameState);
     }
 
@@ -58,6 +56,7 @@ export default (websocketServer: WebSocketServer) => {
         gameState.addPlayer(ws.id);
         // @ts-ignore
         ws.send(JSON.stringify({id: ws.id}));
+        senders.sendGameSettingsToClient(ws, gameState);
         senders.sendGameStateToAll(gameState);
         senders.sendPromptOptions(ws, gameState);
         senders.sendPrompt(ws, gameState);
@@ -99,7 +98,6 @@ export default (websocketServer: WebSocketServer) => {
         return gameState.selectedPrompt?.answers.includes(guess) && !gameState.givenAnswers.has(guess);
     }
 
-
     const updateGuesser = () => {
         const total = websocketServer.clients.size;
         counter = (counter + 1) % total;
@@ -107,7 +105,7 @@ export default (websocketServer: WebSocketServer) => {
             counter = (counter + 1) % total;
         }
         const guesserId = gameState.players[counter].id;
-        timeout = setTimeout(() => handleTimerExpired(guesserId), gameState.timeout);
+        timeout = setTimeout(() => handleTimerExpired(guesserId), gameState.settings.defaultTimeout * 1000);
         senders.sendGameStateToAll(gameState);
         websocketServer.clients.forEach(client => {
             senders.sendGameStateToClient(client, gameState);
@@ -121,15 +119,22 @@ export default (websocketServer: WebSocketServer) => {
             gameState.players[index].lives -= 1;
         }
         const filteredPlayers = gameState.players.filter(player => player.lives > 0);
+        senders.sendExplosionToAll();
         if (filteredPlayers.length > 1) {
-            senders.sendExplosionToAll();
             updateGuesser();
         } else {
-            senders.sendExplosionToAll();
+            handleGameOver(GameOverReason.OnePlayerLeft);
             handleSoftReset();
             senders.sendCurrentGuesserToAll(gameState, counter);
             senders.sendGameStateToAll(gameState);
         }
+    }
+
+    const handleGameOver = (reason: GameOverReason) => {
+        senders.sendGameOverToAll(
+            reason,
+            gameState.players.filter(player => player.lives > 0).map(player => player.id)
+        );
     }
 
     const handleHardReset = () => {
@@ -156,6 +161,13 @@ export default (websocketServer: WebSocketServer) => {
         });
     };
 
+    const handleSettingsUpdate = (newSettings: GameSettings) => {
+        gameState.settings = newSettings;
+        gameState.players.forEach(player => player.lives = newSettings.startingLives);
+        senders.sendSettingsToAll(gameState);
+        senders.sendGameStateToAll(gameState);
+    }
+
     return {
         handleGuess,
         handleStartGame,
@@ -168,5 +180,6 @@ export default (websocketServer: WebSocketServer) => {
         updateGuesser,
         handleUpdatePrompt,
         handleClose,
+        handleSettingsUpdate,
     }
 }

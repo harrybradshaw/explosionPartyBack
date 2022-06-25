@@ -8,6 +8,23 @@ export default  (websocketServer: WebSocketServer) => {
         })
     }
 
+    const sendSettingsToAll = (gameState: GameState) => {
+        websocketServer.clients.forEach(client => sendGameSettingsToClient(client, gameState));
+    };
+
+    const sendGameSettingsToClient = (websocket: WebSocket, gameState: GameState) => {
+        websocket.send(JSON.stringify({'settings': gameState.settings}));
+    }
+
+    const sendGameOverToAll = (reason: GameOverReason, winners: string[]) => {
+        websocketServer.clients.forEach(client => {
+            client.send(JSON.stringify({
+                gameOver: reason,
+                winners: winners,
+            }));
+        })
+    }
+
     const sendPrompt = (ws: WebSocket, gameState: GameState) => {
         ws.send(JSON.stringify({word: gameState.selectedPrompt?.prompt}));
     }
@@ -18,12 +35,12 @@ export default  (websocketServer: WebSocketServer) => {
     }
 
     const sendGameStateToClient = (client: WebSocket, gameState: GameState) => {
-        const {selectedPrompt, promptOptions, ...publicGameState} = gameState;
+        const {selectedPrompt, promptOptions, settings, ...publicGameState} = gameState;
         client.send(JSON.stringify(publicGameState));
     }
 
     const sendGameStateToAll = (gameState: GameState) => {
-        const {selectedPrompt, promptOptions, ...publicGameState} = gameState;
+        const {selectedPrompt, promptOptions, settings, ...publicGameState} = gameState;
         websocketServer.clients.forEach(client => {
             client.send(JSON.stringify({
                 ...publicGameState,
@@ -51,5 +68,8 @@ export default  (websocketServer: WebSocketServer) => {
         sendGameStateToClient,
         sendPrompt,
         sendPromptOptions,
+        sendGameOverToAll,
+        sendSettingsToAll,
+        sendGameSettingsToClient,
     }
 }

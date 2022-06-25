@@ -1,6 +1,7 @@
 import WebSocket from 'ws';
 import * as http from 'http';
 import gameHandlers from "../gameHandlers";
+import GameSettings from "../models/gameSettings";
 
 export default (expressServer: http.Server) => {
     const websocketServer = new WebSocket.Server({
@@ -15,6 +16,14 @@ export default (expressServer: http.Server) => {
             websocketServer.emit("connection", websocket, request);
         });
     });
+
+    setInterval(() => {
+        console.log('keep')
+        websocketServer.clients.forEach(client => {
+            client.send(JSON.stringify('keepAlive'))
+        })
+    }, 5000)
+
 
     websocketServer.on(
         "connection",
@@ -47,6 +56,9 @@ export default (expressServer: http.Server) => {
                             break;
                         case 'promptSelected':
                             handlers.handleUpdatePrompt(parsedMessage['value']);
+                            break;
+                        case 'settingsUpdate':
+                            handlers.handleSettingsUpdate(parsedMessage['value'] as GameSettings);
                             break;
                     }
                 }

@@ -1,5 +1,6 @@
 import Player from "./player";
 import Prompt from "./prompt";
+import GameSettings from "./gameSettings";
 
 export default class GameState {
     players: Player[];
@@ -7,11 +8,11 @@ export default class GameState {
     selectedPrompt: Prompt | undefined;
     givenAnswers;
     gameIsRunning: boolean;
-    timeout: number;
+    settings: GameSettings;
 
     constructor() {
         this.players = [];
-        this.timeout = 5000;
+        this.settings = new GameSettings();
         this.givenAnswers = new Set;
         this.gameIsRunning = false;
         this.selectedPrompt = undefined;
