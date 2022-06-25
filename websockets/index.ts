@@ -29,7 +29,7 @@ export default (expressServer: http.Server) => {
         "connection",
         function connection(websocketConnection) {
             handlers.handleJoin(websocketConnection)
-            websocketConnection.on("close", handlers.handleClose)
+            websocketConnection.on("close", () => handlers.handleClose(websocketConnection))
             websocketConnection.on("message", (message) => {
                 // @ts-ignore
                 const parsedMessage = JSON.parse(message);

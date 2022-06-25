@@ -62,10 +62,11 @@ export default (websocketServer: WebSocketServer) => {
         senders.sendPrompt(ws, gameState);
     }
 
-    const handleClose = (ws: WebSocket) => {
-        console.log('client closed the connection');
+    const handleClose = (webSocket: WebSocket) => {
         // @ts-ignore
-        gameState.players = gameState.players.filter(player => player.id !== ws.id);
+        console.log(`client ${webSocket.id} closed the connection`);
+        // @ts-ignore
+        gameState.players = gameState.players.filter(player => player.id !== webSocket.id);
         if (websocketServer.clients.size){
             counter = counter % websocketServer.clients.size;
         }
@@ -144,7 +145,7 @@ export default (websocketServer: WebSocketServer) => {
     const handleSoftReset = () => {
         gameState.givenAnswers = new Set;
         gameState.players.forEach(player => {
-            player.lives = 3;
+            player.lives = gameState.settings.startingLives;
             player.isReady = false;
             player.lastTyped = '';
         });
