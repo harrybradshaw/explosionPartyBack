@@ -5,9 +5,9 @@ export default class Player {
     lives: number;
     lastTyped: string;
 
-    constructor(id: string) {
+    constructor(id: string, startingLives: number) {
         this.id = id;
-        this.lives = 3;
+        this.lives = startingLives;
         this.isReady = false;
         this.friendlyName = undefined;
         this.lastTyped = '';

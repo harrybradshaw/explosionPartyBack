@@ -194,7 +194,7 @@ export default class GameState {
     }
 
     addPlayer(id: string) {
-        const newPlayer =  new Player(id);
+        const newPlayer =  new Player(id, this.settings.startingLives);
         this.players.push(newPlayer)
     }
 
